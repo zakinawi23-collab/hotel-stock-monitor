@@ -12,7 +12,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="brand"><div class="logo">▦</div><div><h1>HOTEL STOCK MONITOR</h1><small>Housekeeping inventory</small></div></div><div class="top-actions"><button id="installBtn" class="hidden">Install</button><button id="backupBtn" title="Export backup">↥ Backup</button></div></header>
+<header class="top"><div class="brand"><div class="logo">▦</div><div><h1>HOTEL STOCK MONITOR</h1><small>Housekeeping inventory</small></div></div><div class="top-actions"><button id="installBtn" class="hidden">Install</button><button id="backupBtn" title="Export backup">↥ Backup</button><button id="restoreBtn" title="Restore backup">↧ Restore</button></div></header>
 <main class="app">
 <div class="welcome"><div><div class="muted" id="today"></div><h2>Stock overview</h2></div><div class="muted" style="font-size:12px">● Offline ready</div></div>
 <section class="stats">
@@ -70,7 +70,7 @@ function download(name,content,type){const a=document.createElement('a'),u=URL.c
 $('csvBtn').onclick=()=>{const rows=[['Item','Category','Quantity','Unit','Minimum','Code'],...items.map(i=>[i.name,i.cat,i.qty,i.unit,i.min,i.code])];download('hotel-stock-report.csv',rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv')};
 $('backupBtn').onclick=()=>download('hotel-stock-backup.json',JSON.stringify({version:1,exportedAt:new Date().toISOString(),items,history},null,2),'application/json');
 render();
-let fileInput=document.createElement('input');fileInput.type='file';fileInput.accept='application/json';fileInput.hidden=true;document.body.append(fileInput);$('backupBtn').addEventListener('contextmenu',e=>{e.preventDefault();fileInput.click()});fileInput.onchange=async()=>{try{const d=JSON.parse(await fileInput.files[0].text());if(!Array.isArray(d.items)||!Array.isArray(d.history))throw Error();if(confirm('Restore backup? Current data will be replaced.')){items=d.items;history=d.history;save();render();toast('Backup restored')}}catch(e){toast('Invalid backup file')}fileInput.value=''};
+let fileInput=document.createElement('input');fileInput.type='file';fileInput.accept='application/json';fileInput.hidden=true;document.body.append(fileInput);$('restoreBtn').onclick=()=>fileInput.click();fileInput.onchange=async()=>{try{const d=JSON.parse(await fileInput.files[0].text());if(!Array.isArray(d.items)||!Array.isArray(d.history))throw Error();if(confirm('Restore backup? Current data will be replaced.')){items=d.items;history=d.history;save();render();toast('Backup restored')}}catch(e){toast('Invalid backup file')}fileInput.value=''};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('installBtn').classList.remove('hidden')});$('installBtn').onclick=async()=>{if(deferredInstall){deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('installBtn').classList.add('hidden')}};
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 </script>
